@@ -19,6 +19,7 @@ import (
 
 type mqttExporter struct {
 	client    mqtt.Client
+	topic	  string
 	tlsConfig *tls.Config
 }
 
@@ -43,8 +44,12 @@ func New(cfg Config) (exporter.Exporter, error) {
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		return nil, token.Error()
 	}
+	if cfg.Topic != "" {
+		cfg.Topic = "ruuvitag-gollector"
+	}
 	return &mqttExporter{
 		client:    client,
+		topic: cfg.Topic,
 		tlsConfig: tlsConfig,
 	}, nil
 }
@@ -76,7 +81,7 @@ func (m mqttExporter) Export(ctx context.Context, data sensor.Data) error {
 		return err
 	}
 	mac := strings.Replace(data.Addr, ":", "", -1)
-	topic := fmt.Sprintf("ruuvitag-gollector/%s/%s", data.Name, mac)
+	topic := fmt.Sprintf(m.client.topic+"%s/%s", data.Name, mac)
 	token := m.client.Publish(topic, 0, false, buf.String())
 	token.Wait()
 	return token.Error()

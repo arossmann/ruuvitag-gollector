@@ -15,6 +15,7 @@ import (
 func init() {
 	rootCmd.PersistentFlags().Bool("mqtt.enabled", false, "Publish measurements to a MQTT broker")
 	rootCmd.PersistentFlags().String("mqtt.addr", "tcp://localhost:1883", "MQTT broker address with protocol (tcp or ssl), host and port")
+	rootCmd.PersistentFlags().String("mqtt.topic", "ruuvitag-gollector", "Base Topic")
 	rootCmd.PersistentFlags().String("mqtt.client_id", "ruuvitag-gollector", "MQTT client id")
 	rootCmd.PersistentFlags().String("mqtt.username", "", "MQTT username")
 	rootCmd.PersistentFlags().String("mqtt.password", "", "MQTT password")
@@ -30,6 +31,7 @@ func addMQTTExporter(exporters *[]exporter.Exporter) error {
 	}
 	exporter, err := mqtt.New(mqtt.Config{
 		Addr:              addr,
+		Topic: 			   viper.GetString("mqtt.topic"),
 		ClientId:          viper.GetString("mqtt.client_id"),
 		Username:          viper.GetString("mqtt.username"),
 		Password:          viper.GetString("mqtt.password"),
